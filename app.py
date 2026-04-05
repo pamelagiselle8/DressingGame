@@ -27,15 +27,18 @@ selected_color_bgr = (0, 255, 0)
 live_hue_degrees = 0.0
 live_saturation = 255
 
-# Body selection variables
+# Asset selection variables
 body_images = []
-current_body_index = 0
+nose_images = []
+eyes_images = []
 body_lock = threading.Lock()
-last_swipe_time = 0
-SWIPE_COOLDOWN = 0.5  # Seconds between swipes
+SWIPE_COOLDOWN = 0.8  # Seconds between swipes
 game_state = {
     'current_body_index': 0,
-    'last_swipe_time': 0
+    'current_nose_index': 0,
+    'current_eyes_index': 0,
+    'selected_part': 'body',
+    'last_swipe_time': 0,
 }
 
 # Hand position tracking for swipe detection
@@ -147,22 +150,27 @@ def is_hand_closed_with_index_only(hand_landmarks):
 
 
 def swipe(hand_landmarks, hand_id='right'):
-    """Detect swipe by tracking hand movement left/right.
+    """Detect swipe direction by tracking the index finger relative to the hand.
     Requires hand to be closed with only index finger extended."""
     
     if not is_hand_closed_with_index_only(hand_landmarks):
         return None
     
-    # Get wrist position
+    # Track the index finger tip relative to the index MCP so hand translation matters less.
     wrist = hand_landmarks[0]
-    current_x = wrist.x
+    index_tip = hand_landmarks[8]
+    index_mcp = hand_landmarks[5]
+    current_position = (
+        index_tip.x - index_mcp.x,
+        index_tip.y - index_mcp.y,
+    )
     
     # Get or initialize history for this hand
     if hand_id not in hand_position_history:
         hand_position_history[hand_id] = []
     
     history = hand_position_history[hand_id]
-    history.append(current_x)
+    history.append(current_position)
     
     # Keep only recent history
     if len(history) > POSITION_HISTORY_SIZE:
@@ -172,14 +180,19 @@ def swipe(hand_landmarks, hand_id='right'):
     if len(history) < 3:
         return None
     
-    # Calculate movement direction
-    # Compare current position with position from a few frames ago
-    old_x = history[0]
-    new_x = history[-1]
+    # Calculate movement direction using the finger's local movement.
+    old_x, old_y = history[0]
+    new_x, new_y = history[-1]
     delta_x = new_x - old_x
-    
-    # Threshold for minimum movement
-    if abs(delta_x) > 0.1:  # Significant movement detected
+    delta_y = new_y - old_y
+
+    # Thresholds for minimum movement in local finger coordinates.
+    # Swipe vertical
+    if abs(delta_y) > abs(delta_x) and abs(delta_y) > 0.04:
+        return "up" if delta_y < 0 else "down"
+
+    # Swipe horizontal
+    if abs(delta_x) > 0.04:
         return "right" if delta_x > 0 else "left"
     
     return None
@@ -232,18 +245,29 @@ def draw_knob_ui(frame, center_x, center_y, hue_degrees, saturation, current_col
     cv2.putText(frame, 'Mano mas cerrada: cambia saturacion', (20, 235), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
 
 
-def load_body_images():
-    """Load all body images from the body folder."""
-    body_folder = './body'
-    image_files = sorted(glob.glob(os.path.join(body_folder, '*.png')))
-    
+def load_transparent_images(folder_path):
+    """Load transparent PNG images from a folder."""
+    image_files = sorted(glob.glob(os.path.join(folder_path, '*.png')))
+
     images = []
     for img_path in image_files:
         img = cv2.imread(img_path, cv2.IMREAD_UNCHANGED)
         if img is not None:
             images.append(img)
-    
+
     return images
+
+
+def load_body_images():
+    return load_transparent_images('./body')
+
+
+def load_nose_images():
+    return load_transparent_images('./nose')
+
+
+def load_eyes_images():
+    return load_transparent_images('./eyes')
 
 
 def overlay_body_image(frame, body_image, center_x, center_y, scale=0.4):
@@ -266,7 +290,7 @@ def overlay_body_image(frame, body_image, center_x, center_y, scale=0.4):
     return frame
 
 
-def create_character_display(body_image, width=600, height=800, bg_color=(255, 255, 255)):
+def create_character_display(body_image, nose_image=None, eyes_image=None, width=600, height=800, bg_color=(255, 255, 255)):
     """Create a clean display of the character with a solid background."""
     if body_image is None:
         return np.ones((height, width, 3), dtype=np.uint8) * np.array(bg_color, dtype=np.uint8)
@@ -294,6 +318,16 @@ def create_character_display(body_image, width=600, height=800, bg_color=(255, 2
     
     # Overlay the body image
     canvas = overlay_rgba(canvas, resized_body, x, y)
+
+    # Overlay the nose image using the same transform so both layers stay aligned
+    if nose_image is not None:
+        resized_nose = cv2.resize(nose_image, (new_width, new_height))
+        canvas = overlay_rgba(canvas, resized_nose, x, y)
+
+    if eyes_image is not None:
+        resized_eyes = cv2.resize(eyes_image, (new_width, new_height))
+        canvas = overlay_rgba(canvas, resized_eyes, x, y)
+
     return canvas
 
 
@@ -310,12 +344,34 @@ options = GestureRecognizerOptions(
     result_callback=print_result,
 )
 
-# Load body images
+# Load body and nose images
 body_images = load_body_images()
+nose_images = load_nose_images()
+eyes_images = load_eyes_images()
 if not body_images:
     print("No body images found in ./body folder")
 else:
     print(f"Loaded {len(body_images)} body images")
+
+if not nose_images:
+    print("No nose images found in ./nose folder")
+else:
+    print(f"Loaded {len(nose_images)} nose images")
+
+if not eyes_images:
+    print("No eyes images found in ./eyes folder")
+else:
+    print(f"Loaded {len(eyes_images)} eyes images")
+
+
+def get_next_part(part, direction):
+    parts = ['body', 'nose', 'eyes']
+    index = parts.index(part)
+    if direction == 'up':
+        return parts[(index + 1) % len(parts)]
+    if direction == 'down':
+        return parts[(index - 1) % len(parts)]
+    return part
 
 with GestureRecognizer.create_from_options(options) as recognizer:
     cap = cv2.VideoCapture(0)
@@ -352,16 +408,30 @@ with GestureRecognizer.create_from_options(options) as recognizer:
                 for hand_index, hand_landmarks in enumerate(current_result.hand_landmarks):
                     hand_label = current_result.handedness[hand_index][0].category_name
                     if hand_label == 'Right':
-                        # Check for swipe to change body
+                        # Check for swipe to change the selected part or its options
                         swipe_direction = swipe(hand_landmarks, 'right')
                         if swipe_direction is not None:
                             current_time = time.time()
                             if current_time - game_state['last_swipe_time'] > SWIPE_COOLDOWN:
                                 with body_lock:
-                                    if swipe_direction == "right":
-                                        game_state['current_body_index'] = (game_state['current_body_index'] + 1) % len(body_images)
+                                    if swipe_direction == "up":
+                                        game_state['selected_part'] = get_next_part(game_state['selected_part'], 'up')
+                                    elif swipe_direction == "down":
+                                        game_state['selected_part'] = get_next_part(game_state['selected_part'], 'down')
+                                    elif swipe_direction == "right":
+                                        if game_state['selected_part'] == 'nose' and nose_images:
+                                            game_state['current_nose_index'] = (game_state['current_nose_index'] + 1) % len(nose_images)
+                                        elif game_state['selected_part'] == 'eyes' and eyes_images:
+                                            game_state['current_eyes_index'] = (game_state['current_eyes_index'] + 1) % len(eyes_images)
+                                        elif body_images:
+                                            game_state['current_body_index'] = (game_state['current_body_index'] + 1) % len(body_images)
                                     elif swipe_direction == "left":
-                                        game_state['current_body_index'] = (game_state['current_body_index'] - 1) % len(body_images)
+                                        if game_state['selected_part'] == 'nose' and nose_images:
+                                            game_state['current_nose_index'] = (game_state['current_nose_index'] - 1) % len(nose_images)
+                                        elif game_state['selected_part'] == 'eyes' and eyes_images:
+                                            game_state['current_eyes_index'] = (game_state['current_eyes_index'] - 1) % len(eyes_images)
+                                        elif body_images:
+                                            game_state['current_body_index'] = (game_state['current_body_index'] - 1) % len(body_images)
                                 game_state['last_swipe_time'] = current_time
                         
                         # Update color knob based on openness
@@ -373,20 +443,40 @@ with GestureRecognizer.create_from_options(options) as recognizer:
             # Flip the frame for mirror effect
             display_frame = cv2.flip(display_frame, 1)
             
-            # Get current body image
+            # Get current body and nose images
             current_body = None
             if body_images:
                 with body_lock:
                     current_body = body_images[game_state['current_body_index']]
+
+            current_nose = None
+            if nose_images:
+                with body_lock:
+                    current_nose = nose_images[game_state['current_nose_index']]
+
+            current_eyes = None
+            if eyes_images:
+                with body_lock:
+                    current_eyes = eyes_images[game_state['current_eyes_index']]
             
             # Create a clean character display
-            character_display = create_character_display(current_body)
+            character_display = create_character_display(current_body, current_nose, current_eyes)
             
             # Add instructions to both windows
             cv2.putText(display_frame, 'Press S to save character | Q to quit', (10, 30), 
                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
-            cv2.putText(character_display, f'Character {game_state["current_body_index"] + 1}/{len(body_images)}', 
+            cv2.putText(character_display, f'Body {game_state["current_body_index"] + 1}/{len(body_images)}', 
                        (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(character_display, f'Nose {game_state["current_nose_index"] + 1}/{len(nose_images)}', 
+                       (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(character_display, f'Eyes {game_state["current_eyes_index"] + 1}/{len(eyes_images)}', 
+                       (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(character_display, f'Mode: {game_state["selected_part"]}', 
+                       (20, 145), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(character_display, 'Swipe up/down: body -> nose -> eyes', 
+                       (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
+            cv2.putText(character_display, 'Swipe left/right: cambia opcion', 
+                       (20, 205), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
             
             # Display both windows
             cv2.imshow('Camera', display_frame)
@@ -399,7 +489,7 @@ with GestureRecognizer.create_from_options(options) as recognizer:
             elif key == ord('s'):
                 # Save the character image
                 timestamp = time.strftime('%Y%m%d_%H%M%S')
-                filename = f'character_{game_state["current_body_index"]}_{timestamp}.png'
+                filename = f'character_body{game_state["current_body_index"]}_nose{game_state["current_nose_index"]}_eyes{game_state["current_eyes_index"]}_{timestamp}.png'
                 cv2.imwrite(filename, character_display)
                 print(f"Character saved as {filename}")
     finally:
