@@ -38,6 +38,10 @@ game_state = {
     'last_swipe_time': 0
 }
 
+# Hand position tracking for swipe detection
+hand_position_history = {}  # Will store position history per hand
+POSITION_HISTORY_SIZE = 5  # Number of frames to track
+
 
 def create_color_wheel(diameter):
     radius = diameter // 2
@@ -108,14 +112,76 @@ def hand_openness(hand_landmarks):
     average_tip_distance = sum(distance(wrist, hand_landmarks[index]) for index in finger_tips) / len(finger_tips)
     return average_tip_distance / palm_size
 
-def swipe(hand_landmarks):
-    # Detect a quick horizontal swipe by comparing the x-coordinates of the wrist and index finger tip.
+def is_hand_closed_with_index_only(hand_landmarks):
+    """Detect if hand is closed with only index finger extended."""
     wrist = hand_landmarks[0]
-    index_tip = hand_landmarks[8]
-    delta_x = index_tip.x - wrist.x
     
-    if abs(delta_x) > 0.3:  # Adjust threshold as needed
+    # Index finger tip and MCP
+    index_tip = hand_landmarks[8]
+    index_mcp = hand_landmarks[5]
+    
+    # Other finger tips for comparison
+    middle_tip = hand_landmarks[12]
+    ring_tip = hand_landmarks[16]
+    pinky_tip = hand_landmarks[20]
+    
+    # Thumb tip
+    thumb_tip = hand_landmarks[4]
+    
+    # Calculate distances from wrist
+    index_dist = distance(wrist, index_tip)
+    middle_dist = distance(wrist, middle_tip)
+    ring_dist = distance(wrist, ring_tip)
+    pinky_dist = distance(wrist, pinky_tip)
+    thumb_dist = distance(wrist, thumb_tip)
+    
+    # Index should be extended (far from wrist)
+    index_extended = index_dist > 0.15
+    
+    # Other fingers should be closed (close to wrist)
+    others_closed = (middle_dist < index_dist * 0.7 and 
+                     ring_dist < index_dist * 0.7 and 
+                     pinky_dist < index_dist * 0.7)
+    
+    return index_extended and others_closed
+
+
+def swipe(hand_landmarks, hand_id='right'):
+    """Detect swipe by tracking hand movement left/right.
+    Requires hand to be closed with only index finger extended."""
+    
+    if not is_hand_closed_with_index_only(hand_landmarks):
+        return None
+    
+    # Get wrist position
+    wrist = hand_landmarks[0]
+    current_x = wrist.x
+    
+    # Get or initialize history for this hand
+    if hand_id not in hand_position_history:
+        hand_position_history[hand_id] = []
+    
+    history = hand_position_history[hand_id]
+    history.append(current_x)
+    
+    # Keep only recent history
+    if len(history) > POSITION_HISTORY_SIZE:
+        history.pop(0)
+    
+    # Need at least 3 positions to detect movement
+    if len(history) < 3:
+        return None
+    
+    # Calculate movement direction
+    # Compare current position with position from a few frames ago
+    old_x = history[0]
+    new_x = history[-1]
+    delta_x = new_x - old_x
+    
+    # Threshold for minimum movement
+    if abs(delta_x) > 0.1:  # Significant movement detected
         return "right" if delta_x > 0 else "left"
+    
     return None
 
 
@@ -180,7 +246,7 @@ def load_body_images():
     return images
 
 
-def overlay_body_image(frame, body_image, center_x, center_y, scale=0.6):
+def overlay_body_image(frame, body_image, center_x, center_y, scale=0.4):
     """Overlay a body image at the center of the frame."""
     if body_image is None:
         return frame
@@ -198,6 +264,37 @@ def overlay_body_image(frame, body_image, center_x, center_y, scale=0.6):
     # Use overlay_rgba to handle transparency
     frame = overlay_rgba(frame, resized_body, x, y)
     return frame
+
+
+def create_character_display(body_image, width=600, height=800, bg_color=(255, 255, 255)):
+    """Create a clean display of the character with a solid background."""
+    if body_image is None:
+        return np.ones((height, width, 3), dtype=np.uint8) * np.array(bg_color, dtype=np.uint8)
+    
+    # Create a white canvas
+    canvas = np.ones((height, width, 3), dtype=np.uint8) * np.array(bg_color, dtype=np.uint8)
+    
+    # Resize the body image to fit nicely in the canvas
+    body_height, body_width = body_image.shape[:2]
+    scale = 0.7
+    new_width = int(width * scale)
+    new_height = int(body_height * (new_width / body_width))
+    
+    if new_height > int(height * 0.9):
+        new_height = int(height * 0.9)
+        new_width = int(body_width * (new_height / body_height))
+    
+    resized_body = cv2.resize(body_image, (new_width, new_height))
+    
+    # Center the body in the canvas
+    center_x = width // 2
+    center_y = height // 2
+    x = int(center_x - new_width // 2)
+    y = int(center_y - new_height // 2)
+    
+    # Overlay the body image
+    canvas = overlay_rgba(canvas, resized_body, x, y)
+    return canvas
 
 
 # Create a gesture recognizer instance with the live stream mode:
@@ -226,6 +323,8 @@ with GestureRecognizer.create_from_options(options) as recognizer:
 
     try:
         cv2.namedWindow('Camera', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('Character', cv2.WINDOW_NORMAL)
+        
         while cap.isOpened():
             ret, frame = cap.read()
 
@@ -239,8 +338,8 @@ with GestureRecognizer.create_from_options(options) as recognizer:
             recognizer.recognize_async(mp_image, frame_timestamp_ms)
 
             display_frame = frame.copy()
-            wheel_center_x = display_frame.shape[1] - WHEEL_MARGIN - WHEEL_RADIUS
-            wheel_center_y = WHEEL_MARGIN + WHEEL_RADIUS
+            # wheel_center_x = display_frame.shape[1] - WHEEL_MARGIN - WHEEL_RADIUS
+            # wheel_center_y = WHEEL_MARGIN + WHEEL_RADIUS
             
             # Center of the frame for body display
             body_center_x = display_frame.shape[1] // 2
@@ -252,9 +351,9 @@ with GestureRecognizer.create_from_options(options) as recognizer:
             if current_result and current_result.hand_landmarks and current_result.handedness:
                 for hand_index, hand_landmarks in enumerate(current_result.hand_landmarks):
                     hand_label = current_result.handedness[hand_index][0].category_name
-                    if hand_label == 'Left':
+                    if hand_label == 'Right':
                         # Check for swipe to change body
-                        swipe_direction = swipe(hand_landmarks)
+                        swipe_direction = swipe(hand_landmarks, 'right')
                         if swipe_direction is not None:
                             current_time = time.time()
                             if current_time - game_state['last_swipe_time'] > SWIPE_COOLDOWN:
@@ -266,26 +365,43 @@ with GestureRecognizer.create_from_options(options) as recognizer:
                                 game_state['last_swipe_time'] = current_time
                         
                         # Update color knob based on openness
-                        live_hue_degrees = angle_from_wrist_to_index_mcp(hand_landmarks)
-                        live_saturation = openness_to_saturation(hand_openness(hand_landmarks))
-                        live_color_bgr = hue_to_bgr(live_hue_degrees, live_saturation)
-                        selected_color_bgr = live_color_bgr
+                        # live_hue_degrees = angle_from_wrist_to_index_mcp(hand_landmarks)
+                        # live_saturation = openness_to_saturation(hand_openness(hand_landmarks))
+                        # live_color_bgr = hue_to_bgr(live_hue_degrees, live_saturation)
+                        # selected_color_bgr = live_color_bgr
 
             # Flip the frame for mirror effect
             display_frame = cv2.flip(display_frame, 1)
             
-            # Draw the body image in the center
+            # Get current body image
+            current_body = None
             if body_images:
                 with body_lock:
                     current_body = body_images[game_state['current_body_index']]
-                display_frame = overlay_body_image(display_frame, current_body, body_center_x, body_center_y)
             
-            # Draw the color knob UI
-            draw_knob_ui(display_frame, wheel_center_x, wheel_center_y, live_hue_degrees, live_saturation, selected_color_bgr)
+            # Create a clean character display
+            character_display = create_character_display(current_body)
             
+            # Add instructions to both windows
+            cv2.putText(display_frame, 'Press S to save character | Q to quit', (10, 30), 
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
+            cv2.putText(character_display, f'Character {game_state["current_body_index"] + 1}/{len(body_images)}', 
+                       (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+            
+            # Display both windows
             cv2.imshow('Camera', display_frame)
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            cv2.imshow('Character', character_display)
+            
+            # Handle key presses
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord('q'):
                 break
+            elif key == ord('s'):
+                # Save the character image
+                timestamp = time.strftime('%Y%m%d_%H%M%S')
+                filename = f'character_{game_state["current_body_index"]}_{timestamp}.png'
+                cv2.imwrite(filename, character_display)
+                print(f"Character saved as {filename}")
     finally:
         cap.release()
         cv2.destroyAllWindows()
