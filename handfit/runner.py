@@ -7,7 +7,7 @@ import mediapipe as mp
 from .assets import AssetLibrary
 from .config import MODEL_PATH, PART_ORDER, SWIPE_COOLDOWN
 from .mediapipe_helpers import angle_from_wrist_to_index_mcp, hand_openness, hue_to_bgr
-from .rendering import compose_outfit, draw_knob_ui
+from .rendering import compose_outfit
 from .state import OutfitState
 from .swipe import detect_swipe
 
@@ -46,6 +46,7 @@ def run():
     print(f"Loaded {assets.count('shoes')} shoes images")
     print(f"Loaded {assets.count('nose')} nose images")
     print(f"Loaded {assets.count('eyes')} eyes images")
+    print(f"Loaded {assets.count('backgrounds')} backgrounds")
 
     with GestureRecognizer.create_from_options(options) as recognizer:
         cap = cv2.VideoCapture(0)
@@ -99,31 +100,17 @@ def run():
                     assets.get('nose', state.current_indices['nose']),
                     assets.get('eyes', state.current_indices['eyes']),
                 ]
+                current_bg = assets.get('background', state.current_indices['background'])
                 current_body = assets.get('body', state.current_indices['body'])
-                character_display = compose_outfit(current_body, selected_layers)
-
-                cv2.putText(display_frame, 'Press S to save character | Q to quit', (10, 30),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Body {state.current_indices["body"] + 1}/{assets.count("body")}',
-                           (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Top {state.current_indices["top"] + 1}/{assets.count("top")}',
-                           (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Bottom {state.current_indices["bottom"] + 1}/{assets.count("bottom")}',
-                           (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Shoes {state.current_indices["shoes"] + 1}/{assets.count("shoes")}',
-                           (20, 145), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Nose {state.current_indices["nose"] + 1}/{assets.count("nose")}',
-                           (20, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
-                cv2.putText(character_display, f'Eyes {state.current_indices["eyes"] + 1}/{assets.count("eyes")}',
-                           (20, 215), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+                character_display = compose_outfit(current_body, current_bg, selected_layers)
+                character_display_clean = character_display.copy()
                 cv2.putText(character_display, f'Mode: {state.selected_part}',
-                           (20, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2, cv2.LINE_AA)
+                           (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
                 cv2.putText(character_display, 'Swipe up/down: change part',
-                           (20, 285), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
+                           (20, 75), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
                 cv2.putText(character_display, 'Swipe left/right: change option',
-                           (20, 310), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 0), 2, cv2.LINE_AA)
+                           (20, 110), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
 
-                draw_knob_ui(display_frame, 150, 150, 0, 255, (0, 255, 0))
                 cv2.imshow('Camera', display_frame)
                 cv2.imshow('Character', character_display)
 
@@ -138,9 +125,10 @@ def run():
                         f'_bottom{state.current_indices["bottom"]}'
                         f'_shoes{state.current_indices["shoes"]}'
                         f'_nose{state.current_indices["nose"]}'
-                        f'_eyes{state.current_indices["eyes"]}_{timestamp}.png'
+                        f'_eyes{state.current_indices["eyes"]}'
+                        f'_background{state.current_indices["background"]}_{timestamp}.png'
                     )
-                    cv2.imwrite(filename, character_display)
+                    cv2.imwrite(filename, character_display_clean)
                     print(f'Character saved as {filename}')
         finally:
             cap.release()

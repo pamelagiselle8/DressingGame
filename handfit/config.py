@@ -7,7 +7,7 @@ WHEEL_MARGIN = 20
 SWIPE_COOLDOWN = 0.8
 POSITION_HISTORY_SIZE = 5
 
-PART_ORDER = ['body', 'top', 'bottom', 'shoes', 'nose', 'eyes']
+PART_ORDER = ['body', 'top', 'bottom', 'shoes', 'nose', 'eyes', 'background']
 
 ASSET_FOLDERS = {
     'body': './body',
@@ -16,6 +16,7 @@ ASSET_FOLDERS = {
     'shoes': './shoes',
     'nose': './nose',
     'eyes': './eyes',
+    'background': './background'
 }
 
-DISPLAY_ORDER = ['body', 'bottom', 'top', 'shoes', 'nose', 'eyes']
+DISPLAY_ORDER = ['background', 'body', 'bottom', 'top', 'shoes', 'nose', 'eyes']

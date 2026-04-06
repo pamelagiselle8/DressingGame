@@ -1,5 +1,4 @@
 import math
-
 import cv2
 import numpy as np
 
@@ -28,54 +27,18 @@ def overlay_rgba(background, overlay, x, y):
     roi[:] = (alpha * overlay_roi[..., :3] + (1 - alpha) * roi).astype(np.uint8)
     return background
 
-
-def draw_knob_ui(frame, center_x, center_y, hue_degrees, saturation, current_color_bgr):
-    overlay = frame.copy()
-
-    cv2.circle(overlay, (center_x, center_y), 130, (30, 30, 30), -1)
-    cv2.circle(overlay, (center_x, center_y), 130, (255, 255, 255), 2)
-
-    inner_radius = int(130 * 0.68)
-    cv2.circle(overlay, (center_x, center_y), inner_radius, (45, 45, 45), -1)
-
-    pointer_radius = 130 - 18
-    pointer_x = int(center_x + math.cos(math.radians(hue_degrees)) * pointer_radius)
-    pointer_y = int(center_y - math.sin(math.radians(hue_degrees)) * pointer_radius)
-    cv2.line(overlay, (center_x, center_y), (pointer_x, pointer_y), current_color_bgr, 10)
-    cv2.circle(overlay, (pointer_x, pointer_y), 14, (255, 255, 255), 2)
-    cv2.circle(overlay, (pointer_x, pointer_y), 8, current_color_bgr, -1)
-
-    cv2.circle(overlay, (center_x, center_y), 20, current_color_bgr, -1)
-    cv2.circle(overlay, (center_x, center_y), 20, (255, 255, 255), 2)
-
-    alpha = 0.75
-    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
-
-    preview_x1, preview_y1 = 20, 20
-    preview_x2, preview_y2 = 180, 90
-    cv2.rectangle(frame, (preview_x1, preview_y1), (preview_x2, preview_y2), current_color_bgr, -1)
-    cv2.rectangle(frame, (preview_x1, preview_y1), (preview_x2, preview_y2), (255, 255, 255), 2)
-    cv2.putText(frame, 'Color actual', (20, 115), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2, cv2.LINE_AA)
-
-    saturation_width = 180
-    saturation_height = 18
-    bar_x1, bar_y1 = 20, 135
-    bar_x2, bar_y2 = bar_x1 + saturation_width, bar_y1 + saturation_height
-    cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x2, bar_y2), (60, 60, 60), -1)
-    fill_width = int(saturation_width * (saturation / 255.0))
-    cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x1 + fill_width, bar_y2), current_color_bgr, -1)
-    cv2.rectangle(frame, (bar_x1, bar_y1), (bar_x2, bar_y2), (255, 255, 255), 1)
-    cv2.putText(frame, 'Saturacion', (20, 175), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (255, 255, 255), 2, cv2.LINE_AA)
-
-    cv2.putText(frame, 'Mano izquierda abierta: gira la perilla', (20, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
-    cv2.putText(frame, 'Mano mas cerrada: cambia saturacion', (20, 235), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (255, 255, 255), 2, cv2.LINE_AA)
-
-
-def compose_outfit(body_image, layers, width=600, height=800, bg_color=(255, 255, 255), scale=0.7):
-    if body_image is None:
+def compose_outfit(body_image, bg_image, layers, width=600, height=800, bg_color=(255, 214, 252), scale=0.7, bg_scale=1.0):
+    if body_image is None and bg_image is None:
         return np.ones((height, width, 3), dtype=np.uint8) * np.array(bg_color, dtype=np.uint8)
 
-    canvas = np.ones((height, width, 3), dtype=np.uint8) * np.array(bg_color, dtype=np.uint8)
+    canvas = np.zeros((height, width, 3), dtype=np.uint8)
+    if bg_image is not None:
+        bg_height, bg_width = bg_image.shape[:2]
+        bg_scale = min(width / bg_width, height / bg_height) * bg_scale
+        new_bg_width = int(bg_width * bg_scale)
+        new_bg_height = int(bg_height * bg_scale)
+        resized_bg = cv2.resize(bg_image, (new_bg_width, new_bg_height))
+        canvas = overlay_rgba(canvas, resized_bg, (width - new_bg_width) // 2, (height - new_bg_height) // 2)
 
     body_height, body_width = body_image.shape[:2]
     new_width = int(width * scale)
