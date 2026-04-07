@@ -33,7 +33,7 @@ const processFrame = useCallback(() => {
   const recognizer = recognizerRef.current;
 
   // LOG 1: ¿el loop corre?
-  console.log('frame tick — video readyState:', video?.readyState, '| recognizer:', !!recognizer);
+  // console.log('frame tick — video readyState:', video?.readyState, '| recognizer:', !!recognizer);
 
   if (!video || !recognizer || video.readyState < 2) {
     rafRef.current = requestAnimationFrame(processFrame);
@@ -47,8 +47,8 @@ const processFrame = useCallback(() => {
   const result = recognizer.recognizeForVideo(video, ts);
 
   // LOG 2: ¿qué devuelve MediaPipe exactamente?
-  console.log('MP result:', result);
-  console.log('MP result keys:', result ? Object.keys(result) : 'null');
+  // console.log('MP result:', result);
+  // console.log('MP result keys:', result ? Object.keys(result) : 'null');
 
   onResultRef.current(result);
   rafRef.current = requestAnimationFrame(processFrame);
