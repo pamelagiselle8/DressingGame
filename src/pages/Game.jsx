@@ -7,8 +7,15 @@ import { detectSwipe }    from '../swipe';
 import { SWIPE_COOLDOWN } from '../config';
 import PaintWindow        from '../components/PaintWindow';
 import BackgroundStage    from '../components/BackgroundStage';
+import { useMusic } from '../AudioContext.jsx';
 
 export default function Game() {
+    const { unlockAndPlay } = useMusic();
+    useEffect(() => {
+    unlockAndPlay();
+    }, []);
+
+  const swipeAudioRef = useRef(null);
   const videoRef = useRef(null);
   const { state, stepMode, stepIndex, stepBackground, confirmOutfit, editOutfit, setSwipeTime } = useOutfitState();
 
@@ -49,6 +56,13 @@ export default function Game() {
       setDebugInfo(prev => ({ ...prev, lastSwipe: direction, swipeBlocked: blocked }));
 
       if (blocked) return;
+
+
+      const audio = swipeAudioRef.current;
+        if (audio) {
+        audio.currentTime = 0;
+        audio.play();
+        }
       setSwipeTime(now);
 
       const stage = stageRef.current;
@@ -87,6 +101,8 @@ export default function Game() {
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center gap-4 p-4">
+        <audio ref={swipeAudioRef} src='src/assets/sound-effects/swipe.mp3' />
+
       {/* Feed de webcam */}
       <div className="relative rounded-xl overflow-hidden shadow-xl w-[640px] h-[480px] bg-black flex-shrink-0">
         <video
