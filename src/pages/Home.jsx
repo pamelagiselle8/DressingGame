@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMusic } from '../AudioContext';
+import Grainient from '../components/Grainient';
 
 export default function Home() {
   const navigate       = useNavigate();
@@ -44,6 +45,32 @@ export default function Home() {
 
   return (
     <div className='min-h-screen bg-[#fff9fc] flex justify-center items-center'>
+        <div style={{ width: '100%', height: '100%', position: 'absolute', zIndex: 0 }}>
+                <Grainient
+                    color1="#ffb2dd"
+                    color2="#fed6f8"
+                    color3="#fff9fc"
+                    timeSpeed={1.5}
+                    colorBalance={0}
+                    warpStrength={1}
+                    warpFrequency={5}
+                    warpSpeed={3}
+                    warpAmplitude={50}
+                    blendAngle={0}
+                    blendSoftness={0.05}
+                    rotationAmount={500}
+                    noiseScale={2}
+                    grainAmount={0.1}
+                    grainScale={2}
+                    grainAnimated={false}
+                    contrast={1.5}
+                    gamma={1}
+                    saturation={1}
+                    centerX={0}
+                    centerY={0}
+                    zoom={0.9}
+                />
+            </div>
         <div className='relative lg:hidden block'>
         <img className='w-[90vw] max-w-[80vh]' src='src/assets/compatibility-message.png' alt='home' />
         </div>

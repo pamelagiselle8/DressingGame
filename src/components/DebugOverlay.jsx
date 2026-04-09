@@ -66,27 +66,22 @@ export default function DebugOverlay({ landmarks, handedness, lastSwipe, selecte
       {/* Canvas para el skeleton */}
       <canvas
         ref={canvasRef}
-        width={640}
-        height={480}
-        className="absolute inset-0 w-full h-full"
+        // width={640}
+        // height={480}
+        width={495}
+        height={335}
+        className="-ml-8 absolute inset-0 w-full h-full " //bg-pink-500/10
       />
 
       {/* HUD de estado ─ esquina superior izquierda */}
       <div className="absolute top-3 left-3 flex flex-col gap-1">
         {/* Último swipe detectado */}
-        <SwipeBadge direction={lastSwipe} blocked={swipeBlocked} />
+        {/* <SwipeBadge direction={lastSwipe} blocked={swipeBlocked} /> */}
 
         {/* Parte seleccionada */}
-        <div className="bg-black/60 text-white text-xs font-mono px-2 py-1 rounded backdrop-blur">
-          part: <span className="text-yellow-300 font-bold">{selectedPart}</span>
-        </div>
-
-        {/* Landmarks count */}
-        <div className="bg-black/60 text-white text-xs font-mono px-2 py-1 rounded backdrop-blur">
-          hands: <span className={landmarks?.length ? 'text-green-400' : 'text-red-400'}>
-            {landmarks?.length ?? 0}
-          </span>
-        </div>
+        {/* <div className="bg-black/60 text-white text-xs font-mono px-2 py-1 rounded backdrop-blur">
+          part: <span className="text-[#ffa9d8] font-bold">{selectedPart}</span>
+        </div> */}
       </div>
     </div>
   );
@@ -105,7 +100,7 @@ function SwipeBadge({ direction, blocked }) {
   return (
     <div className={`
       text-white text-xs font-mono px-2 py-1 rounded backdrop-blur transition-all duration-150
-      ${direction ? colors[direction] : 'bg-black/60'}
+      ${direction ? colors[direction] : 'bg-black/40'}
       ${blocked ? 'opacity-40' : 'opacity-100'}
     `}>
       swipe: {direction
