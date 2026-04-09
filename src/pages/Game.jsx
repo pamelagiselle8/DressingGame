@@ -97,7 +97,7 @@ export default function Game() {
 
     function handleSave() {
         // Usar html2canvas o similar para capturar BackgroundStage
-
+        console.log('Saving image...');
     }
 
     return (
@@ -132,51 +132,57 @@ export default function Game() {
             <div className='relative lg:hidden block'>
                 <img className='w-[90vw] max-w-[80vh]' src='src/assets/compatibility-message.png' alt='home' />
             </div>
-            
+
 
             <div className="relative hidden lg:flex items-center justify-center">
                 <audio ref={swipeAudioRef} src='src/assets/sound-effects/swipe.mp3' />
-            <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
-                <img src='src/assets/tabs/camera-tab2.png' alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
-                <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
-                    <video
-                        ref={videoRef}
-                        className="absolute h-full w-auto object-cover scale-x-[-1]" // mirror
-                        muted
-                        playsInline
-                    />
-                    <DebugOverlay
-                        landmarks={debugInfo.landmarks}
-                        handedness={debugInfo.handedness}
-                        lastSwipe={debugInfo.lastSwipe}
-                        selectedPart={state.selectedPart}
-                        swipeBlocked={debugInfo.swipeBlocked}
-                    />
-                    {state.selectionStage === 'outfit' && (
-                        <div className="absolute bottom-4 left-1/2 -translate-x-2/3 bg-black/40 text-white text-sm px-4 py-1.5 rounded-full backdrop-blur">
-                            Editing: <span className="font-semibold capitalize text-[#ffa9d8]">{state.selectedPart}</span>
-                        </div>
-                    )}
+                <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
+                    <img src='src/assets/tabs/camera-tab2.png' alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
+                    <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
+                        <video
+                            ref={videoRef}
+                            className="absolute h-full w-auto object-cover scale-x-[-1]" // mirror
+                            muted
+                            playsInline
+                        />
+                        <DebugOverlay
+                            landmarks={debugInfo.landmarks}
+                            handedness={debugInfo.handedness}
+                            lastSwipe={debugInfo.lastSwipe}
+                            selectedPart={state.selectedPart}
+                            swipeBlocked={debugInfo.swipeBlocked}
+                        />
+                        {state.selectionStage === 'outfit' && (
+                            <div className="absolute bottom-4 left-1/2 -translate-x-2/3 bg-black/40 text-white text-sm px-4 py-1.5 rounded-full backdrop-blur">
+                                Editing: <span className="font-semibold capitalize text-[#ffa9d8]">{state.selectedPart}</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
-            {/* Feed de webcam */}
+                {/* Feed de webcam */}
 
-            {/* Panel derecho: PaintWindow u BackgroundStage */}
-            <div className="flex-shrink-0 w-[400px] h-[480px] flex items-center justify-center">
-                {state.selectionStage === 'outfit' ? (
-                    <PaintWindow
-                        currentIndices={state.currentIndices}
-                        onConfirm={confirmOutfit}
-                    />
-                ) : (
-                    <BackgroundStage
-                        currentIndices={state.currentIndices}
-                        backgroundIndex={state.backgroundIndex}
-                        onEdit={editOutfit}
-                        onSave={handleSave}
-                    />
-                )}
-            </div>
+                {/* Panel derecho: PaintWindow u BackgroundStage */}
+                <div className="flex-shrink-0 w-[400px] h-[480px] flex items-center justify-center">
+                    {state.selectionStage === 'outfit' ? (
+                        <PaintWindow
+                            currentIndices={state.currentIndices}
+                            onConfirm={confirmOutfit}
+                        />
+                    ) : (
+                        <BackgroundStage
+                            currentIndices={state.currentIndices}
+                            backgroundIndex={state.backgroundIndex}
+                            onEdit={editOutfit}
+                            onSave={handleSave}
+                        />
+                    )}
+                    {/* <BackgroundStage
+                            currentIndices={state.currentIndices}
+                            backgroundIndex={state.backgroundIndex}
+                            onEdit={editOutfit}
+                            onSave={handleSave}
+                        /> */}
+                </div>
             </div>
         </div>
     );

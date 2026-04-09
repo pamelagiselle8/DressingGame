@@ -14,4 +14,5 @@ export const DISPLAY_ORDER = ['body', 'bottom', 'top', 'shoes', 'nose', 'eyes'];
 export const PAINT_WINDOW_CONTENT_RECT = { x: 74, y: 69, width: 214, height: 294 };
 export const PAINT_WINDOW_BUTTON_RECT  = { x: 91, y: 372, width: 122, height: 34 };
 export const PAINT_WINDOW_BACKGROUND   = 'rgb(246, 226, 242)';
-export const PAINT_WINDOW_PATH         = 'src/assets/tabs/preview-tab.png';
+export const PAINT_WINDOW_PATH         = 'src/assets/tabs/outfit-tab.png';
+export const BACKGROUND_WINDOW_PATH    = 'src/assets/tabs/background-tab.png';

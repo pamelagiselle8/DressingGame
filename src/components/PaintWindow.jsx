@@ -9,7 +9,7 @@ export default function PaintWindow({ currentIndices, onConfirm }) {
         src={PAINT_WINDOW_PATH}
         alt="paint window frame"
         className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-        // style={{ zIndex: 0 }}
+      // style={{ zIndex: 0 }}
       />
 
       {/* Área de contenido del outfit */}
@@ -17,15 +17,16 @@ export default function PaintWindow({ currentIndices, onConfirm }) {
         className="absolute"
         style={{ top: 40, left: 95, width: 214, height: 294, zIndex: 5 }}
       >
-        <OutfitCanvas currentIndices={currentIndices} />
+        {/* <OutfitCanvas currentIndices={currentIndices} /> */}
+        <OutfitCanvas currentIndices={currentIndices} className="absolute inset-0 h-[230px] translate-y-1/7" />
       </div>
 
       {/* Botón confirmar */}
-      <img 
-      className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'
-      style={{ top: 325, left: 140, width: 122, height: 34, zIndex: 15 }}
-      src='src/assets/pixel-buttons/next-button.png' alt='confirm outfit'
-      onClick={onConfirm}
+      <img
+        className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'
+        style={{ top: 325, left: 140, width: 122, height: 34, zIndex: 15 }}
+        src='src/assets/pixel-buttons/next-button.png' alt='confirm outfit'
+        onClick={onConfirm}
       />
       {/* <button
         onClick={onConfirm}

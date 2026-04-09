@@ -6,7 +6,7 @@ export default function OutfitCanvas({ currentIndices, className = '' }) {
   const layers = DISPLAY_ORDER.map(part => assetLibrary.get(part, currentIndices[part] ?? 0));
 
   return (
-    <div className={`relative w-full h-full ${className}`}>
+    <div className={`relative ${className}`}>
       {layers.map((url, i) =>
         url ? (
           <img
