@@ -1,6 +1,10 @@
 import { assetLibrary } from '../assets';
 import OutfitCanvas from './OutfitCanvas';
-import { BACKGROUND_WINDOW_PATH } from '../config';
+import {
+  BACKGROUND_WINDOW_PATH,
+  NEXT_BUTTON_PATH,
+  BACK_BUTTON_PATH,
+ } from '../config';
 
 export default function BackgroundStage({ currentIndices, backgroundIndex, onEdit, onSave }) {
   const bgUrl = assetLibrary.get('background', backgroundIndex);
@@ -38,13 +42,13 @@ export default function BackgroundStage({ currentIndices, backgroundIndex, onEdi
         <img
           className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
           style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
-          src='src/assets/pixel-buttons/back-button.png' alt='confirm outfit'
+          src={BACK_BUTTON_PATH} alt='confirm outfit'
           onClick={onEdit}
         />
         <img
           className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
           style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
-          src='src/assets/pixel-buttons/next-button.png' alt='confirm outfit'
+          src={NEXT_BUTTON_PATH} alt='confirm outfit'
           onClick={onSave}
         />
         {/* <button

@@ -4,11 +4,16 @@ import { useOutfitState } from '../hooks/useOutfitState';
 import { useMediaPipe } from '../hooks/useMediaPipe';
 import { assetLibrary } from '../assets';
 import { detectSwipe } from '../swipe';
-import { SWIPE_COOLDOWN } from '../config';
 import PaintWindow from '../components/PaintWindow';
 import BackgroundStage from '../components/BackgroundStage';
 import { useMusic } from '../AudioContext.jsx';
 import Grainient from '../components/Grainient.jsx';
+import {
+    SWIPE_COOLDOWN,
+    SWIPE_SOUND_PATH,
+    COMPATIBILITY_MESSAGE_PATH,
+    CAMERA_WINDOW_PATH,
+} from '../config';
 
 export default function Game() {
     const { unlockAndPlay } = useMusic();
@@ -130,14 +135,14 @@ export default function Game() {
             </div>
 
             <div className='relative lg:hidden block'>
-                <img className='w-[90vw] max-w-[80vh]' src='src/assets/compatibility-message.png' alt='home' />
+                <img className='w-[90vw] max-w-[80vh]' src={COMPATIBILITY_MESSAGE_PATH} alt='home' />
             </div>
 
 
             <div className="relative hidden lg:flex items-center justify-center">
-                <audio ref={swipeAudioRef} src='src/assets/sound-effects/swipe.mp3' />
+                <audio ref={swipeAudioRef} src={SWIPE_SOUND_PATH} />
                 <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
-                    <img src='src/assets/tabs/camera-tab2.png' alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
+                    <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
                     <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
                         <video
                             ref={videoRef}

@@ -1,4 +1,5 @@
 import { createContext, useContext, useRef } from 'react';
+import { BACKGROUND_MUSIC_PATH } from './config';
 
 const MusicContext = createContext(null);
 
@@ -39,7 +40,7 @@ export function MusicProvider({ children }) {
 
   return (
     <MusicContext.Provider value={{ unlockAndPlay, stopMusic, fadeOut }}>
-      <audio ref={bgmRef} src='/src/assets/sound-effects/background-music.mp3' />
+      <audio ref={bgmRef} src={BACKGROUND_MUSIC_PATH} />
       {children}
     </MusicContext.Provider>
   );

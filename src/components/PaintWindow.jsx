@@ -1,5 +1,8 @@
-import { PAINT_WINDOW_PATH } from '../config';
 import OutfitCanvas from './OutfitCanvas';
+import {
+  PAINT_WINDOW_PATH,
+  NEXT_BUTTON_PATH,
+} from '../config';
 
 export default function PaintWindow({ currentIndices, onConfirm }) {
   return (
@@ -25,7 +28,7 @@ export default function PaintWindow({ currentIndices, onConfirm }) {
       <img
         className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'
         style={{ top: 325, left: 140, width: 122, height: 34, zIndex: 15 }}
-        src='src/assets/pixel-buttons/next-button.png' alt='confirm outfit'
+        src={NEXT_BUTTON_PATH} alt='confirm outfit'
         onClick={onConfirm}
       />
       {/* <button

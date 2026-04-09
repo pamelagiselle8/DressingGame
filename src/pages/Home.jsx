@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMusic } from '../AudioContext';
 import Grainient from '../components/Grainient';
+import {
+    HOME_IMAGE_PATH,
+    COMPATIBILITY_MESSAGE_PATH,
+    START_BUTTON_PATH,
+    START_SOUND_PATH,
+} from '../config';
 
 export default function Home() {
   const navigate       = useNavigate();
@@ -72,15 +78,15 @@ export default function Home() {
                 />
             </div>
         <div className='relative lg:hidden block'>
-        <img className='w-[90vw] max-w-[80vh]' src='src/assets/compatibility-message.png' alt='home' />
+        <img className='w-[90vw] max-w-[80vh]' src={COMPATIBILITY_MESSAGE_PATH} alt='home' />
         </div>
       <div className='relative hidden lg:block'>
-        <audio ref={audioRef} src='/src/assets/sound-effects/start.mp3' />
-        <img className='h-[40vw]' src='src/assets/home.png' alt='home' />
+        <audio ref={audioRef} src={START_SOUND_PATH} />
+        <img className='h-[40vw]' src={HOME_IMAGE_PATH} alt='home' />
         <img
           onClick={handleStart}
           className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'
-          src='/src/assets/pixel-buttons/start-button.png'
+          src={START_BUTTON_PATH}
           alt='start'
           style={{ left: '13%', top: '83.7%', width: '12%' }}
         />
