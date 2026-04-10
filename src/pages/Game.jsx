@@ -23,6 +23,7 @@ export default function Game() {
         unlockAndPlay();
     }, []);
 
+    const stageRef2 = useRef(null);
     const swipeAudioRef = useRef(null);
     const videoRef = useRef(null);
     const { state, stepMode, stepIndex, stepBackground, confirmOutfit, editOutfit, setSwipeTime } = useOutfitState();
@@ -102,9 +103,53 @@ export default function Game() {
         return () => window.removeEventListener('keydown', onKey);
     }, [state.selectionStage, confirmOutfit, editOutfit]);
 
-    function handleSave() {
-        // Usar html2canvas o similar para capturar BackgroundStage
-        console.log('Saving image...');
+    async function handleSave() {
+        const WIDTH = 800;  // tamaño de la imagen final
+        const HEIGHT = 800;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = WIDTH;
+        canvas.height = HEIGHT;
+        const ctx = canvas.getContext('2d');
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        // 1 — fondo
+        const bgUrl = assetLibrary.get('background', state.backgroundIndex);
+        if (bgUrl) {
+            const bg = await loadImage(bgUrl);
+            ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT); // ocupa todo el canvas
+        }
+
+        // 2 — capas del outfit en DISPLAY_ORDER
+        // el personaje ocupa el centro, ajustá offsetY para subir/bajar
+        const CHAR_W = WIDTH * 0.7;   // 70% del ancho
+        const CHAR_H = HEIGHT * 0.7;  // 90% del alto
+        const CHAR_X = (WIDTH - CHAR_W) / 2;
+        const CHAR_Y = (HEIGHT - CHAR_H) / 2;
+
+        const DISPLAY_ORDER = ['body', 'bottom', 'top', 'shoes', 'nose', 'eyes'];
+
+        for (const part of DISPLAY_ORDER) {
+            const url = assetLibrary.get(part, state.currentIndices[part] ?? 0);
+            if (!url) continue;
+            const img = await loadImage(url);
+            ctx.drawImage(img, CHAR_X, CHAR_Y, CHAR_W, CHAR_H);
+        }
+
+        // 3 — descargar
+        const link = document.createElement('a');
+        link.download = `MyOutfit.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
     }
 
     return (
@@ -138,9 +183,9 @@ export default function Game() {
 
             <div className='relative lg:hidden block'>
                 <img className='w-[90vw] max-w-[80vh]'
-                src={COMPATIBILITY_MESSAGE_PATH_L}
-                srcSet={`${COMPATIBILITY_MESSAGE_PATH_S} 320w, ${COMPATIBILITY_MESSAGE_PATH_M} 768w, ${COMPATIBILITY_MESSAGE_PATH_L} 1024w`}
-                alt='home' />
+                    src={COMPATIBILITY_MESSAGE_PATH_L}
+                    srcSet={`${COMPATIBILITY_MESSAGE_PATH_S} 320w, ${COMPATIBILITY_MESSAGE_PATH_M} 768w, ${COMPATIBILITY_MESSAGE_PATH_L} 1024w`}
+                    alt='home' />
             </div>
 
 

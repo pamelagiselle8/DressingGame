@@ -4,7 +4,7 @@ export const WHEEL_SIZE = 260;
 export const WHEEL_RADIUS = WHEEL_SIZE / 2;
 export const WHEEL_MARGIN = 20;
 
-export const SWIPE_COOLDOWN = 1;
+export const SWIPE_COOLDOWN = 0.8;
 export const POSITION_HISTORY_SIZE = 5;
 
 export const ASSET_BASE_PATH = '/assets/';
