@@ -11,7 +11,9 @@ import Grainient from '../components/Grainient.jsx';
 import {
     SWIPE_COOLDOWN,
     SWIPE_SOUND_PATH,
-    COMPATIBILITY_MESSAGE_PATH,
+    COMPATIBILITY_MESSAGE_PATH_L,
+    COMPATIBILITY_MESSAGE_PATH_M,
+    COMPATIBILITY_MESSAGE_PATH_S,
     CAMERA_WINDOW_PATH,
 } from '../config';
 
@@ -135,7 +137,10 @@ export default function Game() {
             </div>
 
             <div className='relative lg:hidden block'>
-                <img className='w-[90vw] max-w-[80vh]' src={COMPATIBILITY_MESSAGE_PATH} alt='home' />
+                <img className='w-[90vw] max-w-[80vh]'
+                src={COMPATIBILITY_MESSAGE_PATH_L}
+                srcSet={`${COMPATIBILITY_MESSAGE_PATH_S} 320w, ${COMPATIBILITY_MESSAGE_PATH_M} 768w, ${COMPATIBILITY_MESSAGE_PATH_L} 1024w`}
+                alt='home' />
             </div>
 
 

@@ -70,7 +70,7 @@ export default function DebugOverlay({ landmarks, handedness, lastSwipe, selecte
         // height={480}
         width={495}
         height={335}
-        className="-ml-8 absolute inset-0 w-full h-full " //bg-pink-500/10
+        className="-ml-8 absolute inset-0 w-full h-full "
       />
 
       {/* HUD de estado ─ esquina superior izquierda */}

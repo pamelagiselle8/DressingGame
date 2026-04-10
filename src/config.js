@@ -4,7 +4,7 @@ export const WHEEL_SIZE = 260;
 export const WHEEL_RADIUS = WHEEL_SIZE / 2;
 export const WHEEL_MARGIN = 20;
 
-export const SWIPE_COOLDOWN = 0.8;
+export const SWIPE_COOLDOWN = 1;
 export const POSITION_HISTORY_SIZE = 5;
 
 export const ASSET_BASE_PATH = '/assets/';
@@ -29,5 +29,8 @@ export const BACKGROUND_MUSIC_PATH = '/assets/sound-effects/background-music.mp3
 export const START_SOUND_PATH = '/assets/sound-effects/start.mp3';
 export const SWIPE_SOUND_PATH = '/assets/sound-effects/swipe.mp3';
 
-export const COMPATIBILITY_MESSAGE_PATH = '/assets/compatibility-message.png';
-export const HOME_IMAGE_PATH = '/assets/home.png';
+export const COMPATIBILITY_MESSAGE_PATH_L = '/assets/compatibility-message-l.webp';
+export const COMPATIBILITY_MESSAGE_PATH_M = '/assets/compatibility-message-m.webp';
+export const COMPATIBILITY_MESSAGE_PATH_S = '/assets/compatibility-message-s.webp';
+
+export const HOME_IMAGE_PATH = '/assets/home.webp';

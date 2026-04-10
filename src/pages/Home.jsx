@@ -4,7 +4,9 @@ import { useMusic } from '../AudioContext';
 import Grainient from '../components/Grainient';
 import {
     HOME_IMAGE_PATH,
-    COMPATIBILITY_MESSAGE_PATH,
+    COMPATIBILITY_MESSAGE_PATH_L,
+    COMPATIBILITY_MESSAGE_PATH_M,
+    COMPATIBILITY_MESSAGE_PATH_S,
     START_BUTTON_PATH,
     START_SOUND_PATH,
 } from '../config';
@@ -78,11 +80,18 @@ export default function Home() {
                 />
             </div>
         <div className='relative lg:hidden block'>
-        <img className='w-[90vw] max-w-[80vh]' src={COMPATIBILITY_MESSAGE_PATH} alt='home' />
+        <img className='w-[90vw] max-w-[80vh]' 
+        src={COMPATIBILITY_MESSAGE_PATH_L}
+        srcSet={`${COMPATIBILITY_MESSAGE_PATH_S} 320w, ${COMPATIBILITY_MESSAGE_PATH_M} 768w, ${COMPATIBILITY_MESSAGE_PATH_L} 1024w`}
+        alt='home' />
         </div>
       <div className='relative hidden lg:block'>
         <audio ref={audioRef} src={START_SOUND_PATH} />
-        <img className='h-[40vw]' src={HOME_IMAGE_PATH} alt='home' />
+        <img 
+        className='h-[40vw]'
+        src={HOME_IMAGE_PATH}
+        alt='home'
+        />
         <img
           onClick={handleStart}
           className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'

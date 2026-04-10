@@ -3,56 +3,29 @@ import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 import { MODEL_PATH } from '../config';
 
 export function useMediaPipe({ videoRef, onResult }) {
-  const recognizerRef  = useRef(null);
-  const lastTsRef      = useRef(0);
-  const rafRef         = useRef(null);
-  const onResultRef    = useRef(onResult);
-  onResultRef.current  = onResult; // siempre apunta al callback más reciente sin re-suscribir
+  const recognizerRef = useRef(null);
+  const lastTsRef = useRef(0);
+  const rafRef = useRef(null);
+  const onResultRef = useRef(onResult);
+  onResultRef.current = onResult; // siempre apunta al callback más reciente sin re-suscribir
 
-//   const processFrame = useCallback(() => {
-//     const video      = videoRef.current;
-//     const recognizer = recognizerRef.current;
-//     if (!video || !recognizer || video.readyState < 2) {
-//       rafRef.current = requestAnimationFrame(processFrame);
-//       return;
-//     }
+  const processFrame = useCallback(() => {
+    const video = videoRef.current;
+    const recognizer = recognizerRef.current;
 
-//     const now = performance.now();
-//     const ts  = Math.max(lastTsRef.current + 1, now);
-//     lastTsRef.current = ts;
+    if (!video || !recognizer || video.readyState < 2) {
+      rafRef.current = requestAnimationFrame(processFrame);
+      return;
+    }
 
-//     // recognizeForVideo es la versión síncrona del LIVE_STREAM de Python
-//     const result = recognizer.recognizeForVideo(video, ts);
-//     onResultRef.current(result);
+    const now = performance.now();
+    const ts = Math.max(lastTsRef.current + 1, now);
+    lastTsRef.current = ts;
+    const result = recognizer.recognizeForVideo(video, ts);
 
-//     rafRef.current = requestAnimationFrame(processFrame);
-//   }, [videoRef]);
-
-const processFrame = useCallback(() => {
-  const video      = videoRef.current;
-  const recognizer = recognizerRef.current;
-
-  // LOG 1: ¿el loop corre?
-  // console.log('frame tick — video readyState:', video?.readyState, '| recognizer:', !!recognizer);
-
-  if (!video || !recognizer || video.readyState < 2) {
+    onResultRef.current(result);
     rafRef.current = requestAnimationFrame(processFrame);
-    return;
-  }
-
-  const now = performance.now();
-  const ts  = Math.max(lastTsRef.current + 1, now);
-  lastTsRef.current = ts;
-
-  const result = recognizer.recognizeForVideo(video, ts);
-
-  // LOG 2: ¿qué devuelve MediaPipe exactamente?
-  // console.log('MP result:', result);
-  // console.log('MP result keys:', result ? Object.keys(result) : 'null');
-
-  onResultRef.current(result);
-  rafRef.current = requestAnimationFrame(processFrame);
-}, [videoRef]);
+  }, [videoRef]);
 
   useEffect(() => {
     let cancelled = false;
