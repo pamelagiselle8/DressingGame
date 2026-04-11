@@ -11,6 +11,7 @@ import Grainient from '../components/Grainient.jsx';
 import {
     SWIPE_COOLDOWN,
     SWIPE_SOUND_PATH,
+    SHUTTER_SOUND_PATH,
     COMPATIBILITY_MESSAGE_PATH_L,
     COMPATIBILITY_MESSAGE_PATH_M,
     COMPATIBILITY_MESSAGE_PATH_S,
@@ -104,9 +105,15 @@ export default function Game() {
     }, [state.selectionStage, confirmOutfit, editOutfit]);
 
     async function handleSave() {
-        const WIDTH = 800;  // tamaño de la imagen final
-        const HEIGHT = 800;
+        // 1 — sonido primero, sin await
+        const sfx = shutterRef.current;
+        if (sfx) { sfx.currentTime = 0; sfx.play().catch(() => { }); }
 
+        // 2 — pequeña pausa para que el browser procese el audio antes del canvas
+        await new Promise(resolve => setTimeout(resolve, 80));
+
+        // 3 — renderizar canvas
+        const WIDTH = 800, HEIGHT = 800;
         const canvas = document.createElement('canvas');
         canvas.width = WIDTH;
         canvas.height = HEIGHT;
@@ -122,20 +129,14 @@ export default function Game() {
             });
         }
 
-        // 1 — fondo
         const bgUrl = assetLibrary.get('background', state.backgroundIndex);
         if (bgUrl) {
             const bg = await loadImage(bgUrl);
-            ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT); // ocupa todo el canvas
+            ctx.drawImage(bg, 0, 0, WIDTH, HEIGHT);
         }
 
-        // 2 — capas del outfit en DISPLAY_ORDER
-        // el personaje ocupa el centro, ajustá offsetY para subir/bajar
-        const CHAR_W = WIDTH * 0.7;   // 70% del ancho
-        const CHAR_H = HEIGHT * 0.7;  // 90% del alto
-        const CHAR_X = (WIDTH - CHAR_W) / 2;
-        const CHAR_Y = (HEIGHT - CHAR_H) / 2;
-
+        const CHAR_W = WIDTH * 0.7, CHAR_H = HEIGHT * 0.7;
+        const CHAR_X = (WIDTH - CHAR_W) / 2, CHAR_Y = (HEIGHT - CHAR_H) / 2;
         const DISPLAY_ORDER = ['body', 'bottom', 'top', 'shoes', 'nose', 'eyes'];
 
         for (const part of DISPLAY_ORDER) {
@@ -145,11 +146,65 @@ export default function Game() {
             ctx.drawImage(img, CHAR_X, CHAR_Y, CHAR_W, CHAR_H);
         }
 
-        // 3 — descargar
+        // 4 — descargar
         const link = document.createElement('a');
-        link.download = `MyOutfit.png`;
+        link.download = 'MyOutfit.png';
         link.href = canvas.toDataURL('image/png');
         link.click();
+    }
+
+    const [photoMode, setPhotoMode] = useState(false); // 'idle' | 'flash' | 'result'
+    const [photoUrl, setPhotoUrl] = useState(null);
+    const shutterRef = useRef(null);
+
+    async function handlePhotoClick() {
+        if (state.selectionStage !== 'background') return;
+
+        // 1 — flash
+        setPhotoMode('flash');
+        shutterRef.current?.play().catch(() => { });
+
+        // 2 — renderizar imagen en canvas offscreen
+        const W = 800, H = 800;
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+
+        function loadImg(src) {
+            return new Promise((res, rej) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => res(img);
+                img.onerror = rej;
+                img.src = src;
+            });
+        }
+
+        const bgUrl = assetLibrary.get('background', state.backgroundIndex);
+        if (bgUrl) {
+            const bg = await loadImg(bgUrl);
+            ctx.drawImage(bg, 0, 0, W, H);
+        }
+        const CHAR_W = W * 0.7, CHAR_H = H * 0.9;
+        const CHAR_X = (W - CHAR_W) / 2, CHAR_Y = (H - CHAR_H) / 2;
+        for (const part of DISPLAY_ORDER) {
+            const url = assetLibrary.get(part, state.currentIndices[part] ?? 0);
+            if (!url) continue;
+            const img = await loadImg(url);
+            ctx.drawImage(img, CHAR_X, CHAR_Y, CHAR_W, CHAR_H);
+        }
+
+        const url = canvas.toDataURL('image/png');
+        setPhotoUrl(url);
+
+        // 3 — quitar flash, mostrar resultado
+        setTimeout(() => setPhotoMode('result'), 350);
+    }
+
+    function handleRetry() {
+        setPhotoMode('idle');
+        setPhotoUrl(null);
     }
 
     return (
@@ -191,6 +246,8 @@ export default function Game() {
 
             <div className="relative hidden lg:flex items-center justify-center">
                 <audio ref={swipeAudioRef} src={SWIPE_SOUND_PATH} />
+                <audio ref={shutterRef} src={SHUTTER_SOUND_PATH} />
+
                 <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
                     <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
                     <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">

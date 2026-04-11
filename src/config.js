@@ -28,6 +28,7 @@ export const BACK_BUTTON_PATH = '/assets/pixel-buttons/back-button.png';
 export const BACKGROUND_MUSIC_PATH = '/assets/sound-effects/background-music.mp3';
 export const START_SOUND_PATH = '/assets/sound-effects/start.mp3';
 export const SWIPE_SOUND_PATH = '/assets/sound-effects/swipe.mp3';
+export const SHUTTER_SOUND_PATH = '/assets/sound-effects/shutter.mp3';
 
 export const COMPATIBILITY_MESSAGE_PATH_L = '/assets/compatibility-message-l.webp';
 export const COMPATIBILITY_MESSAGE_PATH_M = '/assets/compatibility-message-m.webp';

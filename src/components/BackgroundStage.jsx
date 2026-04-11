@@ -4,13 +4,38 @@ import {
   BACKGROUND_WINDOW_PATH,
   NEXT_BUTTON_PATH,
   BACK_BUTTON_PATH,
- } from '../config';
+} from '../config';
+import TargetCursor from './TargetCursor';
+import { useState } from 'react';
 
 export default function BackgroundStage({ currentIndices, backgroundIndex, onEdit, onSave }) {
   const bgUrl = assetLibrary.get('background', backgroundIndex);
+  const [cameraMode, setCameraMode] = useState('');
+  const [flashing, setFlashing] = useState(false);
+
+  async function handleSave() {
+      // flash
+      setFlashing(true);
+      setTimeout(() => setFlashing(false), 600);
+      onSave();
+      setCameraMode('');
+  }
 
   return (
-    <div className="relative w-[380px] h-[380px] rounded-xl">
+    <div
+      className={"relative w-[380px] h-[380px] rounded-xl " + cameraMode}
+      onClick={cameraMode === 'cursor-target' ? handleSave : () => {}}
+    >
+      {cameraMode === 'cursor-target' && <TargetCursor
+        spinDuration={2}
+        hideDefaultCursor
+        parallaxOn
+        hoverDuration={0.2}
+      />}
+      {/* flash overlay */}
+      {flashing && (
+        <div className='fixed inset-0 bg-white z-50 pointer-events-none animate-pulse' />
+      )}
       {/* Fondo */}
       {bgUrl && (
         <img
@@ -38,32 +63,22 @@ export default function BackgroundStage({ currentIndices, backgroundIndex, onEdi
       </div> */}
 
       {/* Botones */}
+        {cameraMode !== 'cursor-target' && 
       <div className="absolute bottom-5 flex gap-6 translate-x-1/5 z-20">
         <img
           className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
           style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
-          src={BACK_BUTTON_PATH} alt='confirm outfit'
+          src={BACK_BUTTON_PATH} alt='edit outfit'
           onClick={onEdit}
         />
         <img
           className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
           style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
           src={NEXT_BUTTON_PATH} alt='confirm outfit'
-          onClick={onSave}
+          // onClick={onSave}
+          onClick={() => {setCameraMode('cursor-target')}}
         />
-        {/* <button
-          onClick={onEdit}
-          className="bg-white/20 backdrop-blur text-white text-xs px-3 py-1.5 rounded-lg border border-white/30 hover:bg-white/30 transition-colors"
-        >
-          Edit outfit
-        </button>
-        <button
-          onClick={onSave}
-          className="bg-white text-gray-900 text-xs font-medium px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          Save image
-        </button> */}
-      </div>
+      </div>}
     </div>
   );
 }
