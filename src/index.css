@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
 @keyframes wobble {
+    0%  { transform: translateX(0); }
   25%  { transform: translateX(40px); }
   75%  { transform: translateX(40px); }
+  100% { transform: translateX(0); }
 }
 
 .animate-wobble {
-  animation: wobble 2.8s ease-in-out infinite;
+  animation: wobble 3s ease-in-out infinite;
 }

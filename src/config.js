@@ -16,14 +16,14 @@ export const DISPLAY_ORDER = ['body', 'bottom', 'top', 'shoes', 'nose', 'eyes'];
 export const PAINT_WINDOW_CONTENT_RECT = { x: 74, y: 69, width: 214, height: 294 };
 export const PAINT_WINDOW_BUTTON_RECT  = { x: 91, y: 372, width: 122, height: 34 };
 export const PAINT_WINDOW_BACKGROUND   = 'rgb(246, 226, 242)';
-export const PAINT_WINDOW_PATH         = '/assets/tabs/outfit-tab.png';
-export const BACKGROUND_WINDOW_PATH    = '/assets/tabs/background-tab.png';
+export const PAINT_WINDOW_PATH         = '/assets/tabs/outfit-tab.webp';
+export const BACKGROUND_WINDOW_PATH    = '/assets/tabs/background-tab.webp';
 
-export const CAMERA_WINDOW_PATH = '/assets/tabs/camera-tab2.png';
+export const CAMERA_WINDOW_PATH = '/assets/tabs/camera-tab.webp';
 
-export const START_BUTTON_PATH = '/assets/pixel-buttons/start-button.png';
-export const NEXT_BUTTON_PATH = '/assets/pixel-buttons/next-button.png';
-export const BACK_BUTTON_PATH = '/assets/pixel-buttons/back-button.png';
+export const START_BUTTON_PATH = '/assets/pixel-buttons/start-button.webp';
+export const NEXT_BUTTON_PATH = '/assets/pixel-buttons/next-button.webp';
+export const BACK_BUTTON_PATH = '/assets/pixel-buttons/back-button.webp';
 
 export const BACKGROUND_MUSIC_PATH = '/assets/sound-effects/background-music.mp3';
 export const START_SOUND_PATH = '/assets/sound-effects/start.mp3';

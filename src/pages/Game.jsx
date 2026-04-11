@@ -249,7 +249,7 @@ export default function Game() {
                 <audio ref={shutterRef} src={SHUTTER_SOUND_PATH} />
 
                 <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
-                    <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10' />
+                    <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10 rounded-xl' />
                     <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
                         <video
                             ref={videoRef}

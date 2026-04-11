@@ -109,7 +109,7 @@ export default function Home() {
         className='h-[25vw] absolute top-22 -right-30 z-0 animate-spin'
         src={FLORES_IMAGE_PATH}
         alt='home'
-        style={{ animationDuration: '8s' }}
+        style={{ animationDuration: '12s' }}
         />
         <img
           onClick={handleStart}
