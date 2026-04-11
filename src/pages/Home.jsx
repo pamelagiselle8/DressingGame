@@ -9,6 +9,9 @@ import {
     COMPATIBILITY_MESSAGE_PATH_S,
     START_BUTTON_PATH,
     START_SOUND_PATH,
+    INSTRUCCIONES_IMAGE_PATH,
+    FLORES_IMAGE_PATH,
+    CAMERA_ROLL_IMAGE_PATH,
 } from '../config';
 
 export default function Home() {
@@ -87,17 +90,33 @@ export default function Home() {
         </div>
       <div className='relative hidden lg:block'>
         <audio ref={audioRef} src={START_SOUND_PATH} />
-        <img 
+        {/* <img 
         className='h-[40vw]'
         src={HOME_IMAGE_PATH}
         alt='home'
+        /> */}
+        <img 
+        className='h-[40vw] z-20 relative -left-8'
+        src={INSTRUCCIONES_IMAGE_PATH}
+        alt='home'
+        />
+        <img 
+        className='h-[13vw] absolute top-10 -right-12 z-0 animate-wobble'
+        src={CAMERA_ROLL_IMAGE_PATH}
+        alt='home'
+        />
+        <img 
+        className='h-[25vw] absolute top-22 -right-30 z-0 animate-spin'
+        src={FLORES_IMAGE_PATH}
+        alt='home'
+        style={{ animationDuration: '8s' }}
         />
         <img
           onClick={handleStart}
-          className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform'
+          className='absolute cursor-pointer hover:scale-105 active:scale-95 transition-transform z-20'
           src={START_BUTTON_PATH}
           alt='start'
-          style={{ left: '13%', top: '83.7%', width: '12%' }}
+          style={{ left: '14%', top: '84%', width: '14%' }}
         />
       </div>
     </div>

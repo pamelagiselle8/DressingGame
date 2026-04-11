@@ -34,3 +34,7 @@ export const COMPATIBILITY_MESSAGE_PATH_M = '/assets/compatibility-message-m.web
 export const COMPATIBILITY_MESSAGE_PATH_S = '/assets/compatibility-message-s.webp';
 
 export const HOME_IMAGE_PATH = '/assets/home.webp';
+export const INSTRUCCIONES_IMAGE_PATH = '/assets/instrucciones.webp';
+export const CAMARA_IMAGE_PATH = '/assets/camara.webp';
+export const FLORES_IMAGE_PATH = '/assets/flores.webp';
+export const CAMERA_ROLL_IMAGE_PATH = '/assets/camera-roll.webp';
