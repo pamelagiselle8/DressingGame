@@ -188,7 +188,7 @@ export default function Game() {
                 />
             </div>
 
-            <div className='relative lg:hidden block'>
+            <div className='relative lg:hidden block min-h-screen min-w-screen flex items-center justify-center pt-10'>
                 <img className='w-[90vw] max-w-[80vh]'
                     src={COMPATIBILITY_MESSAGE_PATH_L}
                     srcSet={`${COMPATIBILITY_MESSAGE_PATH_S} 320w, ${COMPATIBILITY_MESSAGE_PATH_M} 768w, ${COMPATIBILITY_MESSAGE_PATH_L} 1024w`}
@@ -197,20 +197,22 @@ export default function Game() {
 
             <div
                 className={`hidden lg:flex absolute min-h-screen min-w-screen items-center justify-center backdrop-blur-sm rounded-xl p-4 z-30
-    transition-all duration-300 ease-out
-    ${showInstructions
+                            transition-all duration-500 ease-out
+                            ${showInstructions
                         ? 'opacity-100 scale-100 pointer-events-auto'
                         : 'opacity-0 scale-95 pointer-events-none'
                     }`}
+                onClick={() => setShowInstructions(false)}
             >
                 <img
                     className='w-[80vw] max-w-[50vh]'
                     src={IN_GAME_INSTRUCTIONS_IMAGE_PATH}
                     alt='in-game instructions'
+                    onClick={(e) => e.stopPropagation()}
                 />
                 <img
-                    className='absolute h-10 cursor-pointer hover:scale-105 transition-transform'
-                    style={{ top: '73.5%' }}
+                    className='absolute h-9 cursor-pointer hover:scale-105 transition-transform'
+                    style={{ top: '73.8%' }}
                     src={CLOSE_BUTTON_PATH}
                     alt='close'
                     onClick={() => setShowInstructions(false)}
@@ -236,7 +238,7 @@ export default function Game() {
                         <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10 rounded-xl' />
                         <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
                             <video
-                                // ref={videoRef}
+                                ref={videoRef}
                                 className="absolute h-full w-auto object-cover scale-x-[-1]" // mirror
                                 muted
                                 playsInline
@@ -271,12 +273,6 @@ export default function Game() {
                                 onSave={handleSave}
                             />
                         )}
-                        {/* <BackgroundStage
-                            currentIndices={state.currentIndices}
-                            backgroundIndex={state.backgroundIndex}
-                            onEdit={editOutfit}
-                            onSave={handleSave}
-                        /> */}
                     </div>
                 </div>
 
