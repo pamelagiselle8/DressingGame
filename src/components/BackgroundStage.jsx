@@ -14,17 +14,17 @@ export default function BackgroundStage({ currentIndices, backgroundIndex, onEdi
   const [flashing, setFlashing] = useState(false);
 
   async function handleSave() {
-      // flash
-      setFlashing(true);
-      setTimeout(() => setFlashing(false), 600);
-      onSave();
-      setCameraMode('');
+    // flash
+    setFlashing(true);
+    setTimeout(() => setFlashing(false), 600);
+    onSave();
+    setCameraMode('');
   }
 
   return (
     <div
       className={"relative w-[380px] h-[380px] rounded-xl " + cameraMode}
-      onClick={cameraMode === 'cursor-target' ? handleSave : () => {}}
+      onClick={cameraMode === 'cursor-target' ? handleSave : () => { }}
     >
       {cameraMode === 'cursor-target' && <TargetCursor
         spinDuration={2}
@@ -55,30 +55,22 @@ export default function BackgroundStage({ currentIndices, backgroundIndex, onEdi
       {/* Outfit encima del fondo */}
       <OutfitCanvas currentIndices={currentIndices} className="absolute inset-0 h-[230px] translate-y-1/3" />
 
-      {/* HUD de instrucciones */}
-      {/* <div className="absolute top-4 left-4 space-y-1 z-20">
-        <p className="text-white text-sm font-medium drop-shadow">Background selection</p>
-        <p className="text-white/80 text-xs drop-shadow">Swipe left / right → change background</p>
-        <p className="text-white/80 text-xs drop-shadow">Press E to edit outfit again</p>
-      </div> */}
-
       {/* Botones */}
-        {cameraMode !== 'cursor-target' && 
-      <div className="absolute bottom-5 flex gap-6 translate-x-1/5 z-20">
-        <img
-          className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
-          style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
-          src={BACK_BUTTON_PATH} alt='edit outfit'
-          onClick={onEdit}
-        />
-        <img
-          className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
-          style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
-          src={NEXT_BUTTON_PATH} alt='confirm outfit'
-          // onClick={onSave}
-          onClick={() => {setCameraMode('cursor-target')}}
-        />
-      </div>}
+      {cameraMode !== 'cursor-target' &&
+        <div className="absolute bottom-5 flex gap-6 translate-x-1/5 z-20">
+          <img
+            className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
+            style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
+            src={BACK_BUTTON_PATH} alt='edit outfit'
+            onClick={onEdit}
+          />
+          <img
+            className='cursor-pointer hover:scale-105 active:scale-95 transition-transform'
+            style={{ top: 325, left: 0, width: 122, height: 34, zIndex: 100 }}
+            src={NEXT_BUTTON_PATH} alt='confirm outfit'
+            onClick={() => { setCameraMode('cursor-target') }}
+          />
+        </div>}
     </div>
   );
 }

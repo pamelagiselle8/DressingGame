@@ -24,6 +24,8 @@ export const CAMERA_WINDOW_PATH = '/assets/tabs/camera-tab.webp';
 export const START_BUTTON_PATH = '/assets/pixel-buttons/start-button.webp';
 export const NEXT_BUTTON_PATH = '/assets/pixel-buttons/next-button.webp';
 export const BACK_BUTTON_PATH = '/assets/pixel-buttons/back-button.webp';
+export const HELP_BUTTON_PATH = '/assets/pixel-buttons/help-button.webp';
+export const CLOSE_BUTTON_PATH = '/assets/pixel-buttons/close-button.webp';
 
 export const BACKGROUND_MUSIC_PATH = '/assets/sound-effects/background-music.mp3';
 export const START_SOUND_PATH = '/assets/sound-effects/start.mp3';
@@ -39,3 +41,6 @@ export const INSTRUCCIONES_IMAGE_PATH = '/assets/instrucciones.webp';
 export const CAMARA_IMAGE_PATH = '/assets/camara.webp';
 export const FLORES_IMAGE_PATH = '/assets/flores.webp';
 export const CAMERA_ROLL_IMAGE_PATH = '/assets/camera-roll.webp';
+export const IN_GAME_INSTRUCTIONS_IMAGE_PATH = '/assets/in-game-instructions.webp';
+export const PIC_INSTRUCTIONS_IMAGE_PATH = '/assets/pic-instructions.webp';
+

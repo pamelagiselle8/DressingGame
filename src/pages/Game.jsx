@@ -16,6 +16,9 @@ import {
     COMPATIBILITY_MESSAGE_PATH_M,
     COMPATIBILITY_MESSAGE_PATH_S,
     CAMERA_WINDOW_PATH,
+    HELP_BUTTON_PATH,
+    IN_GAME_INSTRUCTIONS_IMAGE_PATH,
+    CLOSE_BUTTON_PATH,
 } from '../config';
 
 export default function Game() {
@@ -24,7 +27,6 @@ export default function Game() {
         unlockAndPlay();
     }, []);
 
-    const stageRef2 = useRef(null);
     const swipeAudioRef = useRef(null);
     const videoRef = useRef(null);
     const { state, stepMode, stepIndex, stepBackground, confirmOutfit, editOutfit, setSwipeTime } = useOutfitState();
@@ -153,62 +155,12 @@ export default function Game() {
         link.click();
     }
 
-    const [photoMode, setPhotoMode] = useState(false); // 'idle' | 'flash' | 'result'
-    const [photoUrl, setPhotoUrl] = useState(null);
     const shutterRef = useRef(null);
 
-    async function handlePhotoClick() {
-        if (state.selectionStage !== 'background') return;
-
-        // 1 — flash
-        setPhotoMode('flash');
-        shutterRef.current?.play().catch(() => { });
-
-        // 2 — renderizar imagen en canvas offscreen
-        const W = 800, H = 800;
-        const canvas = document.createElement('canvas');
-        canvas.width = W;
-        canvas.height = H;
-        const ctx = canvas.getContext('2d');
-
-        function loadImg(src) {
-            return new Promise((res, rej) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => res(img);
-                img.onerror = rej;
-                img.src = src;
-            });
-        }
-
-        const bgUrl = assetLibrary.get('background', state.backgroundIndex);
-        if (bgUrl) {
-            const bg = await loadImg(bgUrl);
-            ctx.drawImage(bg, 0, 0, W, H);
-        }
-        const CHAR_W = W * 0.7, CHAR_H = H * 0.9;
-        const CHAR_X = (W - CHAR_W) / 2, CHAR_Y = (H - CHAR_H) / 2;
-        for (const part of DISPLAY_ORDER) {
-            const url = assetLibrary.get(part, state.currentIndices[part] ?? 0);
-            if (!url) continue;
-            const img = await loadImg(url);
-            ctx.drawImage(img, CHAR_X, CHAR_Y, CHAR_W, CHAR_H);
-        }
-
-        const url = canvas.toDataURL('image/png');
-        setPhotoUrl(url);
-
-        // 3 — quitar flash, mostrar resultado
-        setTimeout(() => setPhotoMode('result'), 350);
-    }
-
-    function handleRetry() {
-        setPhotoMode('idle');
-        setPhotoUrl(null);
-    }
+    const [showInstructions, setShowInstructions] = useState(false);
 
     return (
-        <div className="min-h-screen bg-[#fff9fc] flex items-center justify-center gap-4 p-4">
+        <div className="min-h-screen bg-[#fff9fc] flex items-start justify-center gap-4">
             <div style={{ width: '100%', height: '100%', position: 'absolute', zIndex: 0 }}>
                 <Grainient
                     color1="#ffb2dd"
@@ -243,58 +195,91 @@ export default function Game() {
                     alt='home' />
             </div>
 
+            <div
+                className={`hidden lg:flex absolute min-h-screen min-w-screen items-center justify-center backdrop-blur-sm rounded-xl p-4 z-30
+    transition-all duration-300 ease-out
+    ${showInstructions
+                        ? 'opacity-100 scale-100 pointer-events-auto'
+                        : 'opacity-0 scale-95 pointer-events-none'
+                    }`}
+            >
+                <img
+                    className='w-[80vw] max-w-[50vh]'
+                    src={IN_GAME_INSTRUCTIONS_IMAGE_PATH}
+                    alt='in-game instructions'
+                />
+                <img
+                    className='absolute h-10 cursor-pointer hover:scale-105 transition-transform'
+                    style={{ top: '73.5%' }}
+                    src={CLOSE_BUTTON_PATH}
+                    alt='close'
+                    onClick={() => setShowInstructions(false)}
+                />
+            </div>
 
-            <div className="relative hidden lg:flex items-center justify-center">
+            <div className="relative hidden lg:flex flex-col justify-center min-h-screen min-w-screen bg-pink-400/10 rounded-xl overflow-hidden">
                 <audio ref={swipeAudioRef} src={SWIPE_SOUND_PATH} />
                 <audio ref={shutterRef} src={SHUTTER_SOUND_PATH} />
-
-                <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
-                    <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10 rounded-xl' />
-                    <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
-                        <video
-                            ref={videoRef}
-                            className="absolute h-full w-auto object-cover scale-x-[-1]" // mirror
-                            muted
-                            playsInline
-                        />
-                        <DebugOverlay
-                            landmarks={debugInfo.landmarks}
-                            handedness={debugInfo.handedness}
-                            lastSwipe={debugInfo.lastSwipe}
-                            selectedPart={state.selectedPart}
-                            swipeBlocked={debugInfo.swipeBlocked}
-                        />
-                        {state.selectionStage === 'outfit' && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-2/3 bg-black/40 text-white text-sm px-4 py-1.5 rounded-full backdrop-blur">
-                                Editing: <span className="font-semibold capitalize text-[#ffa9d8]">{state.selectedPart}</span>
-                            </div>
-                        )}
-                    </div>
+                <div className='w-full flex justify-end p-8 top-0 absolute z-20'>
+                    <img
+                        src={HELP_BUTTON_PATH}
+                        alt='help'
+                        className='w-10 cursor-pointer hover:scale-110 transition-transform'
+                        onClick={() => {
+                            setShowInstructions(true);
+                        }}
+                    />
                 </div>
-                {/* Feed de webcam */}
 
-                {/* Panel derecho: PaintWindow u BackgroundStage */}
-                <div className="flex-shrink-0 w-[400px] h-[480px] flex items-center justify-center">
-                    {state.selectionStage === 'outfit' ? (
-                        <PaintWindow
-                            currentIndices={state.currentIndices}
-                            onConfirm={confirmOutfit}
-                        />
-                    ) : (
-                        <BackgroundStage
-                            currentIndices={state.currentIndices}
-                            backgroundIndex={state.backgroundIndex}
-                            onEdit={editOutfit}
-                            onSave={handleSave}
-                        />
-                    )}
-                    {/* <BackgroundStage
+                <div className='flex items-center justify-center'>
+                    <div className="relative rounded-xl overflow-hidden w-[540px] h-[380px] flex-shrink-0">
+                        <img src={CAMERA_WINDOW_PATH} alt='camera tab' className='absolute h-full pointer-events-none z-10 bg-pink-400/10 rounded-xl' />
+                        <div className="relative rounded-xl overflow-hidden mt-9 ml-2 w-[495px] h-[335px] flex-shrink-0">
+                            <video
+                                // ref={videoRef}
+                                className="absolute h-full w-auto object-cover scale-x-[-1]" // mirror
+                                muted
+                                playsInline
+                            />
+                            <DebugOverlay
+                                landmarks={debugInfo.landmarks}
+                                handedness={debugInfo.handedness}
+                                lastSwipe={debugInfo.lastSwipe}
+                                selectedPart={state.selectedPart}
+                                swipeBlocked={debugInfo.swipeBlocked}
+                            />
+                            {state.selectionStage === 'outfit' && (
+                                <div className="absolute bottom-4 left-1/2 -translate-x-2/3 bg-black/40 text-white text-sm px-4 py-1.5 rounded-full backdrop-blur">
+                                    Editing: <span className="font-semibold capitalize text-[#ffa9d8]">{state.selectedPart}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Panel derecho: PaintWindow u BackgroundStage */}
+                    <div className="flex-shrink-0 w-[400px] flex items-center justify-center">
+                        {state.selectionStage === 'outfit' ? (
+                            <PaintWindow
+                                currentIndices={state.currentIndices}
+                                onConfirm={confirmOutfit}
+                            />
+                        ) : (
+                            <BackgroundStage
+                                currentIndices={state.currentIndices}
+                                backgroundIndex={state.backgroundIndex}
+                                onEdit={editOutfit}
+                                onSave={handleSave}
+                            />
+                        )}
+                        {/* <BackgroundStage
                             currentIndices={state.currentIndices}
                             backgroundIndex={state.backgroundIndex}
                             onEdit={editOutfit}
                             onSave={handleSave}
                         /> */}
+                    </div>
                 </div>
+
             </div>
         </div>
     );
